@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astigmatism Test - Vision Check</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .center-container {
+            text-align: center;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 700px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions-text {
+            line-height: 2rem;
+            color: #010560;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            color: #000;
+            list-style-type: disc;
+            text-align: left;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: inline-block;
+        }
+
+        .blue-button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+
+        .blue-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Vision Check</div>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+        </div>
+    </nav>
+
+    <!-- Instructions Container -->
+    <div id="instructions-container" class="center-container">
+        <font size="7"><b>Instructions</b></font>
+        <font size="6">
+            <ul>
+                <li>Look at the image and focus on the lines carefully.</li>
+                <li>Answer based on whether all lines appear equal or if some lines look different.</li>
+                <li>Make sure you are in a well-lit environment for accurate results.</li>
+            </ul>
+        </font>
+        <br>
+        <button class="blue-button" onclick="readInstructions()">Read Instructions</button>
+        <button class="blue-button" onclick="startTest()">Start Test</button>
+    </div>
+
+    <!-- Test Container -->
+    <div id="test-container" class="hidden">
+        <h2>Astigmatism Test</h2>
+        <div class="test-content">
+            <img class="astigmatism-plate" src="{{ url_for('static', filename='images/astigmatism.jpg') }}" alt="Astigmatism Plate">
+            <div class="input-section">
+                <button class="blue-button" onclick="submitAstigmatism('clear')">All lines appear equal.</button>
+                <button class="blue-button" onclick="submitAstigmatism('blur')">Some lines appear unequal.</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Container -->
+    <div id="results-container" class="hidden center-container">
+        <h1>Test Results</h1>
+        <div id="results"></div>
+        <button class="blue-button" onclick="restartTest()">Restart Test</button>
+    </div>
+
+    <script>
+        // Read instructions aloud
+        function readInstructions() {
+            const instructions = `
+                Look at the image and focus on the lines carefully.
+                Answer based on whether all lines appear equal or if some lines look different.
+                Make sure you are in a well-lit environment for accurate results.
+            `;
+            const speech = new SpeechSynthesisUtterance(instructions);
+            speechSynthesis.speak(speech);
+        }
+
+        // Start the test by showing the test container and hiding instructions
+        function startTest() {
+            document.getElementById('instructions-container').classList.add('hidden');
+            document.getElementById('test-container').classList.remove('hidden');
+        }
+
+        // Submit the astigmatism result
+        function submitAstigmatism(value) {
+            const resultsContainer = document.getElementById('results-container');
+            const results = document.getElementById('results');
+
+            let resultMessage = value === 'clear'
+                ? 'You reported that all lines appear equal. You might not have astigmatism.'
+                : 'You reported that some lines appear unequal. You might have astigmatism.';
+
+            results.innerHTML = `<h2>${resultMessage}</h2>`;
+
+            resultsContainer.classList.remove('hidden');
+            document.getElementById('test-container').classList.add('hidden');
+
+            // Read the result aloud
+            const speech = new SpeechSynthesisUtterance(resultMessage);
+            speechSynthesis.speak(speech);
+        }
+
+        // Restart the test
+        function restartTest() {
+            document.getElementById('results-container').classList.add('hidden');
+            document.getElementById('instructions-container').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

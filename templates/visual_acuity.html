@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Acuity Test - Vision Check</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .navbar {
+            width: 100%;
+            background-color: #8fa5e1;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-brand {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 16px;
+        }
+
+        .container {
+            text-align: center;
+            margin: 0 auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .results-container, .instruction-container {
+            margin-top: 80px; /* To prevent overlap with the navbar */
+        }
+
+        button {
+            background-color: #8da3ed;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #688ae0;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+
+        .letter-display {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            width: calc(100% - 40px);
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">Vision Check</div>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+        </div>
+    </nav>
+
+    <!-- Instructions Section -->
+    <div id="instructions-container" class="container instruction-container">
+        <h1>Instructions</h1>
+        <font size = "6">
+            <ul id="instruction-list">
+                <li>Stay one-arm's distance away from the screen.</li>
+                <li>Do not squint or tilt your head.</li>
+                <li>Remove your glasses unless instructed otherwise.</li>
+                <li>Enter the letter you see displayed on the screen.</li>
+            </ul>
+        </font>
+        <button onclick="startTest()">Start Test</button>
+        <button onclick="readInstructions()">Read Instructions</button>
+    </div>
+
+    <!-- Visual Acuity Test Section -->
+    <div id="test-container" class="container hidden">
+        <h2>Visual Acuity Test</h2>
+        <div class="test-content">
+            <div class="letter-display">E</div>
+            <div class="input-section">
+                <input type="text" id="letter-input" placeholder="Enter the letter you see">
+                <button class="next-button" onclick="submitVisualAcuity()">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-container" class="container results-container hidden">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+        <button onclick="restartTest()">Restart Test</button>
+    </div>
+
+    <script>
+        let currentLetterIndex = 0;
+        const visualAcuityLetters = [
+            { size: '72px', letter: 'E' },
+            { size: '48px', letter: 'F' },
+            { size: '36px', letter: 'P' },
+            { size: '24px', letter: 'T' },
+            { size: '18px', letter: 'O' },
+            { size: '10px', letter: 'A' }
+        ];
+    
+        let testResults = {
+            visualAcuity: []
+        };
+    
+        // Start the test by showing the test container and hiding instructions
+        function startTest() {
+            document.getElementById('instructions-container').classList.add('hidden');
+            document.getElementById('test-container').classList.remove('hidden');
+            updateLetterDisplay();
+        }
+    
+        // Submit the answer for the current letter
+        function submitVisualAcuity() {
+            const input = document.getElementById('letter-input');
+            const answer = input.value.toUpperCase();
+            const currentLetter = visualAcuityLetters[currentLetterIndex];
+    
+            // Store the result
+            testResults.visualAcuity.push({
+                letter: currentLetter.letter,
+                answer: answer,
+                correct: answer === currentLetter.letter
+            });
+    
+            // Clear input field
+            input.value = '';
+    
+            currentLetterIndex++;
+    
+            if (currentLetterIndex < visualAcuityLetters.length) {
+                updateLetterDisplay();
+            } else {
+                showResults();
+            }
+        }
+    
+        // Update the letter display
+        function updateLetterDisplay() {
+            const letterDisplay = document.querySelector('.letter-display');
+            const nextLetter = visualAcuityLetters[currentLetterIndex];
+            letterDisplay.style.fontSize = nextLetter.size;
+            letterDisplay.textContent = nextLetter.letter;
+        }
+    
+        // Show results after test
+        function showResults() {
+            const correctAnswers = testResults.visualAcuity.filter(result => result.correct).length;
+            const totalQuestions = visualAcuityLetters.length;
+            const percentage = ((correctAnswers / totalQuestions) * 100).toFixed(2);
+    
+            const denominator = Math.round((20 * totalQuestions) / correctAnswers); // Calculate approximate denominator
+            const probablePower = calculateEyePower(20, denominator);
+    
+            const resultsContainer = document.getElementById('results-container');
+            const results = document.getElementById('results');
+    
+            results.innerHTML = `
+                <h3>Your Results</h3>
+                <p><strong>Correct Answers:</strong> ${correctAnswers} out of ${totalQuestions}</p>
+                <p><strong>Score:</strong> ${percentage}%</p>
+                <p><strong>Estimated Visual Acuity:</strong> 20/${denominator}</p>
+                <p><strong>Probable Eye Power:</strong> ${probablePower} D</p>
+            `;
+    
+            document.getElementById('test-container').classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+        }
+    
+        // Restart the test
+        function restartTest() {
+            currentLetterIndex = 0;
+            testResults.visualAcuity = [];
+            document.getElementById('results-container').classList.add('hidden');
+            document.getElementById('instructions-container').classList.remove('hidden');
+        }
+    
+        // Calculate probable eye power
+        function calculateEyePower(numerator, denominator) {
+            const eyePower = (-100 / denominator) + (100 / numerator);
+            return eyePower.toFixed(2); // Round to 2 decimal places
+        }
+    
+        // Allow submission via Enter key
+        document.getElementById('letter-input').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') submitVisualAcuity();
+        });
+    </script>
+    
+</body>
+</html>

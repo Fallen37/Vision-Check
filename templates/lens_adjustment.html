@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lens Adjustment Test</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .container {
+            text-align: center;
+            margin: 20px auto;
+            padding: 30px;
+            width: 80%;
+            max-width: 700px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .container h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #4a90e2;
+        }
+
+        .container p, .container ul {
+            line-height: 1.6;
+            color: #333;
+            text-align: left;
+        }
+
+        .container ul {
+            list-style: disc;
+            margin: 10px 0 20px 20px;
+        }
+
+        .container .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .container .button-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .container .button-container button:hover {
+            background-color: #0056b3;
+        }
+
+        #lens-adjustment-test {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .lens-adjustment-controls {
+            margin: 20px 0;
+        }
+
+        .slider {
+            width: 70%;
+        }
+
+        .next-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .next-button:hover {
+            background-color: #0056b3;
+        }
+
+        .results-container {
+            max-width: 600px;
+            text-align: center;
+            margin: auto;
+            padding: 20px;
+            border: 2px solid #7a90f3;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .results-container h2 {
+            color: #4a90e2;
+        }
+
+        .results-container p {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Vision Check</div>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+        </div>
+    </nav>
+
+    <main>
+        <div id="instructions" class="container">
+            <h1>Instructions</h1>
+            <font size = "6">
+                <ul>
+                    <li>Focus on a far-away wall without wearing glasses or contact lenses.</li>
+                    <li>Adjust the image blurriness to match the level of blur you normally experience.</li>
+                    <li>Do not squint or use any assistance during the test.</li>
+                    <li>Ensure your screen is at least one arm's length away.</li>
+                </ul>
+            </font>
+            <div class="button-container">
+                <button id="read-instructions">Read Instructions</button>
+                <button id="start-test">Start Test</button>
+            </div>
+        </div>
+
+        <div id="lens-adjustment-test" style="display: none;">
+            <h2>Lens Adjustment Test</h2>
+            <p>Follow the instructions and adjust the lens till the blurriness is correct.</p>
+            <img id="plate-image" src="{{ url_for('static', filename='images/lens_test.jpg') }}" alt="Vision Test Plate">
+            <div class="lens-adjustment-controls">
+                <input type="range" min="0" max="10" value="0" class="slider" id="blur-slider">
+                <span id="slider-value">0</span>
+            </div>
+            <button class="next-button">Next</button>
+        </div>
+
+        <div id="results" class="container" style="display: none;">
+            <h2>Test Results</h2>
+            <p><strong>Lens Adjustment:</strong> <span id="lens-adjustment-result"></span></p>
+            <p><strong>Probable Eye Power:</strong> <span id="eye-power-result"></span></p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Vision Check. All rights reserved.</p>
+        <p>Disclaimer: This is not a substitute for professional medical advice.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const blurSlider = document.getElementById('blur-slider');
+            const plateImage = document.getElementById('plate-image');
+            const sliderValue = document.getElementById('slider-value');
+            const instructionsDiv = document.getElementById('instructions');
+            const testDiv = document.getElementById('lens-adjustment-test');
+            const resultsDiv = document.getElementById('results');
+            const lensAdjustmentResult = document.getElementById('lens-adjustment-result');
+            const eyePowerResult = document.getElementById('eye-power-result');
+
+            document.getElementById('start-test').addEventListener('click', function () {
+                instructionsDiv.style.display = 'none';
+                testDiv.style.display = 'block';
+            });
+
+            if (blurSlider && plateImage && sliderValue) {
+                blurSlider.addEventListener('input', function () {
+                    const blurValue = blurSlider.value;
+                    plateImage.style.filter = `blur(${blurValue}px)`;
+                    sliderValue.textContent = blurValue;
+                });
+
+                document.querySelector('.next-button').addEventListener('click', function () {
+                    const blurValue = blurSlider.value;
+                    testDiv.style.display = 'none';
+                    resultsDiv.style.display = 'block';
+                    lensAdjustmentResult.textContent = blurValue;
+                    eyePowerResult.textContent = `${blurValue * 0.25} D`;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
